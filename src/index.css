@@ -21,6 +21,35 @@ body.dark {
   color: #e5e7eb;
 }
 
+/* High contrast mode */
+.high-contrast {
+  filter: contrast(1.5) brightness(1.1);
+}
+
+.high-contrast h1, .high-contrast h2, .high-contrast h3, .high-contrast h4, .high-contrast h5, .high-contrast h6 {
+  font-weight: 700 !important;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+}
+
+.high-contrast button {
+  border: 2px solid currentColor !important;
+  font-weight: 600 !important;
+}
+
+.high-contrast .bg-white {
+  background-color: #ffffff !important;
+  border: 2px solid #000000 !important;
+}
+
+.high-contrast .text-gray-600, .high-contrast .text-gray-700 {
+  color: #000000 !important;
+}
+
+/* Font size classes */
+.text-sm { font-size: 0.875rem; }
+.text-base { font-size: 1rem; }
+.text-lg { font-size: 1.125rem; }
+
 /* Enhanced typography */
 h1, h2, h3, h4, h5, h6 {
   font-family: 'Inter', sans-serif;
@@ -372,8 +401,33 @@ button:active {
   }
   
   /* Hide interactive elements when printing */
-  button, .theme-toggle {
+  button, .theme-toggle, header, footer, .accessibility-controls {
     display: none !important;
+  }
+
+  /* Print-friendly certificate */
+  .certificate-container {
+    background: white !important;
+    box-shadow: none !important;
+    border: 2px solid #000 !important;
+    page-break-inside: avoid;
+  }
+  
+  .border-double {
+    border-color: #000 !important;
+  }
+  
+  h1, h2, h3, h4 {
+    color: #000 !important;
+  }
+  
+  p {
+    color: #333 !important;
+  }
+
+  @page {
+    margin: 0.5in;
+    size: landscape;
   }
 }
 
@@ -453,4 +507,60 @@ a:hover {
   50% {
     box-shadow: 0 0 20px rgba(59, 130, 246, 0.8);
   }
+}
+
+/* Progress saving notification */
+.progress-notification {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 30;
+  animation: slideInFromRight 0.3s ease-out;
+}
+
+@keyframes slideInFromRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Accessibility enhancements */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  
+  .confetti, .floating-star, .celebration-burst {
+    display: none !important;
+  }
+}
+
+/* Focus indicators for keyboard navigation */
+.focus\:ring-2:focus {
+  ring-width: 2px;
+  ring-color: #3b82f6;
+}
+
+/* Skip link for accessibility */
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 6px;
+  background: #3b82f6;
+  color: white;
+  padding: 8px;
+  border-radius: 4px;
+  text-decoration: none;
+  z-index: 100;
+}
+
+.skip-link:focus {
+  top: 6px;
 }

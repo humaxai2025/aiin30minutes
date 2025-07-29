@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ThemeProvider, useTheme } from './contexts/ThemeContext';
 
 // Import components
@@ -6,6 +6,7 @@ import Header from './components/Header';
 import Footer from './components/Footer';
 import ProgressBar from './components/ProgressBar';
 import Navigation from './components/Navigation';
+import AccessibilityControls from './components/AccessibilityControls';
 
 // Import sections
 import WelcomeSection from './components/sections/WelcomeSection';
@@ -26,7 +27,39 @@ const AppContent = () => {
   const [activities, setActivities] = useState({});
   const [finalQuizScore, setFinalQuizScore] = useState(null);
   const [learnerName, setLearnerName] = useState('');
-  
+  const [fontSize, setFontSize] = useState('normal');
+  const [highContrast, setHighContrast] = useState(false);
+
+  // Load saved progress on component mount
+  useEffect(() => {
+    const savedProgress = localStorage.getItem('ai-tutorial-progress');
+    if (savedProgress) {
+      try {
+        const progress = JSON.parse(savedProgress);
+        setCurrentSection(progress.currentSection || 0);
+        setQuizAnswered(progress.quizAnswered || {});
+        setActivities(progress.activities || {});
+        setFinalQuizScore(progress.finalQuizScore || null);
+        setLearnerName(progress.learnerName || '');
+      } catch (error) {
+        console.log('Could not load saved progress');
+      }
+    }
+  }, []);
+
+  // Save progress whenever key state changes
+  useEffect(() => {
+    const progressData = {
+      currentSection,
+      quizAnswered,
+      activities,
+      finalQuizScore,
+      learnerName,
+      lastSaved: new Date().toISOString()
+    };
+    localStorage.setItem('ai-tutorial-progress', JSON.stringify(progressData));
+  }, [currentSection, quizAnswered, activities, finalQuizScore, learnerName]);
+
   const sections = [
     { component: WelcomeSection, canProgress: () => learnerName.trim() !== '' },
     { component: Section1, canProgress: () => activities.section1_activity },
@@ -70,12 +103,42 @@ const AppContent = () => {
     }
     return section.canProgress;
   };
+
+  const clearProgress = () => {
+    localStorage.removeItem('ai-tutorial-progress');
+    setCurrentSection(0);
+    setQuizAnswered({});
+    setActivities({});
+    setFinalQuizScore(null);
+    setLearnerName('');
+  };
   
   const CurrentComponent = sections[currentSection].component;
+
+  const getFontSizeClass = () => {
+    switch (fontSize) {
+      case 'small': return 'text-sm';
+      case 'large': return 'text-lg';
+      default: return 'text-base';
+    }
+  };
   
   return (
-    <div className={`min-h-screen transition-colors duration-200 ${isDark ? 'bg-gray-900' : 'bg-gray-50'}`}>
+    <div className={`min-h-screen transition-colors duration-200 ${
+      isDark ? 'bg-gray-900' : highContrast ? 'bg-black' : 'bg-gray-50'
+    } ${getFontSizeClass()} ${highContrast ? 'high-contrast' : ''}`}>
       <Header isDark={isDark} toggleTheme={toggleTheme} />
+      
+      {/* Accessibility Controls */}
+      <AccessibilityControls
+        fontSize={fontSize}
+        setFontSize={setFontSize}
+        highContrast={highContrast}
+        setHighContrast={setHighContrast}
+        isDark={isDark}
+        onClearProgress={clearProgress}
+        hasProgress={currentSection > 0 || Object.keys(activities).length > 0}
+      />
       
       <main className="max-w-4xl mx-auto px-4 py-8">
         <ProgressBar 
@@ -85,7 +148,7 @@ const AppContent = () => {
         />
         
         <div className={`rounded-lg shadow-sm p-8 mb-6 fade-in transition-colors duration-200 ${
-          isDark ? 'bg-gray-800' : 'bg-white'
+          isDark ? 'bg-gray-800' : highContrast ? 'bg-white border-4 border-black' : 'bg-white'
         }`}>
           <CurrentComponent
             onQuizAnswer={(correct) => handleQuizAnswer(`section${currentSection}`, correct)}
@@ -97,6 +160,7 @@ const AppContent = () => {
             isDark={isDark}
             onNameSubmit={handleNameSubmit}
             learnerName={learnerName}
+            highContrast={highContrast}
           />
         </div>
         
